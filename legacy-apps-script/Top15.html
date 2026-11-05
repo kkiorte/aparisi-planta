@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top 15 · Aparisi Cepillos</title>
+<style>
+  :root{
+    --azul:#1F3864; --azul-2:#2E4E8A; --azul-f:#E8EEF8; --fondo:#EEF1F6; --tarjeta:#fff; --texto:#1B2333; --suave:#5E6878;
+    --borde:#D6DCE6; --verde:#237A4B; --verde-f:#E3F3EA; --rojo:#B83227; --rojo-f:#FBE9E7; --ambar:#A86412; --ambar-f:#FDF1DF;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--fondo);color:var(--texto);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px}
+  button,input,select,textarea{font:inherit;color:inherit}
+  header{background:var(--azul);color:#fff;display:flex;align-items:center;gap:16px;padding:10px 18px;position:sticky;top:0;z-index:5;flex-wrap:wrap}
+  header h1{margin:0;font-size:22px;letter-spacing:.5px}
+  header .fecha{opacity:.85;font-size:15px}
+  header .sp{flex:1}
+  header a,header button.h{color:#fff;background:rgba(255,255,255,.14);border:0;border-radius:8px;padding:7px 12px;text-decoration:none;cursor:pointer;font-size:14px}
+  .agenda{display:flex;gap:4px;align-items:stretch}
+  .paso{background:rgba(255,255,255,.1);border-radius:8px;padding:5px 10px;font-size:13px;line-height:1.2;min-width:96px;opacity:.75}
+  .paso b{display:block;font-size:14px}
+  .paso.on{background:#fff;color:var(--azul);opacity:1}
+  .paso.pasado{opacity:.45}
+  .reloj{font-variant-numeric:tabular-nums;font-size:24px;font-weight:700;min-width:84px;text-align:center}
+  .reloj.tarde{color:#FFB4A9}
+  main{padding:14px 18px;display:grid;grid-template-columns:1fr 1fr 0.9fr;gap:14px;align-items:start}
+  .panel{background:var(--tarjeta);border:1px solid var(--borde);border-radius:12px;padding:14px 16px;transition:box-shadow .2s,border-color .2s}
+  .panel.activo{border-color:var(--azul-2);box-shadow:0 0 0 3px rgba(46,78,138,.25)}
+  .panel h2{margin:0 0 10px;font-size:16px;color:var(--azul);display:flex;align-items:center;gap:8px}
+  .panel h2 .n{background:var(--azul);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+  .panel h2 small{font-weight:400;color:var(--suave);font-size:13px;margin-left:auto}
+  .acciones-panel{grid-column:1 / span 2}
+  .col3{display:flex;flex-direction:column;gap:14px;grid-row:1 / span 2;grid-column:3}
+  /* indicadores */
+  .kpi-top{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .oee{font-size:54px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .oee.ok{color:var(--verde)} .oee.ko{color:var(--rojo)} .oee.nd{color:var(--suave)}
+  .oee-lbl{font-size:13px;color:var(--suave)}
+  .stats{display:flex;gap:18px;margin-left:auto;text-align:right}
+  .stats div{font-size:12px;color:var(--suave)} .stats b{display:block;font-size:20px;color:var(--texto);font-variant-numeric:tabular-nums}
+  .sub{font-size:12px;color:var(--suave);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 6px;font-weight:600}
+  .parada{display:grid;grid-template-columns:130px 1fr 54px;align-items:center;gap:8px;font-size:13px;margin-bottom:4px}
+  .barra{height:10px;background:var(--azul-f);border-radius:5px;overflow:hidden} .barra i{display:block;height:100%;background:var(--ambar)}
+  .parada span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:collapse}
+  .maq td{padding:4px 2px;border-bottom:1px solid #EEF0F4;font-size:13px}
+  .maq td.r{text-align:right;font-variant-numeric:tabular-nums}
+  .maq tr.ko td:nth-child(2){color:var(--rojo);font-weight:700}
+  .tend{position:relative;display:flex;gap:6px;align-items:flex-end;height:96px;padding-top:4px}
+  .tend .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;max-width:70px;margin:0 auto}
+  .tend .b{width:70%;border-radius:4px 4px 0 0;display:block;opacity:.5} .tend .b.ult{opacity:1}
+  .tend .b.ok{background:var(--verde)} .tend .b.ko{background:var(--rojo)}
+  .tend .v{font-size:11px;color:var(--suave);margin-bottom:2px;font-variant-numeric:tabular-nums}
+  .tend .d{font-size:11px;color:var(--suave);height:18px;line-height:18px}
+  .tend .obj{position:absolute;left:0;right:0;border-top:1.5px dashed var(--azul);opacity:.6;pointer-events:none}
+  .cargando-kpi{display:flex;align-items:center;gap:10px;color:var(--suave);font-size:15px;padding:40px 0;justify-content:center}
+  .spin{width:18px;height:18px;border:3px solid var(--azul-f);border-top-color:var(--azul-2);border-radius:50%;animation:gira .8s linear infinite}
+  @keyframes gira{to{transform:rotate(360deg)}}
+  .averias{font-size:12.5px;color:var(--rojo);margin-top:6px}
+  .aviso-err{background:var(--ambar-f);color:var(--ambar);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:8px}
+  /* acciones */
+  .alta{display:grid;grid-template-columns:96px 1.3fr 1.3fr 150px 140px auto;gap:8px;margin-bottom:10px}
+  .alta input,.alta select,.edit input,.edit select,textarea,.plan input{border:1px solid var(--borde);border-radius:8px;padding:8px 10px;background:#fff;width:100%;min-width:0}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--azul-2);outline-offset:-1px}
+  .btn{border:1px solid var(--azul);background:var(--azul);color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;white-space:nowrap}
+  .btn.sec{background:#fff;color:var(--azul)} .btn.mini{padding:4px 9px;font-size:13px;font-weight:500}
+  .btn.ok{background:var(--verde);border-color:var(--verde)}
+  .filtros{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+  .filtros button{border:1px solid var(--borde);background:#fff;border-radius:999px;padding:4px 12px;cursor:pointer;font-size:13px}
+  .filtros button.on{background:var(--azul);color:#fff;border-color:var(--azul)}
+  .temas th{text-align:left;font-size:12px;color:var(--suave);font-weight:600;padding:6px 6px;border-bottom:2px solid var(--borde)}
+  .temas td{padding:7px 6px;border-bottom:1px solid #EEF0F4;vertical-align:top;font-size:14px}
+  .temas tr.hecha td{color:var(--suave);text-decoration:line-through}
+  .temas tr.hecha td:last-child{text-decoration:none}
+  .temas .pb{color:var(--suave);font-size:13px}
+  .chip{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600}
+  .c-Indus{background:#E6ECF7;color:#2E4E8A} .c-Agro{background:#E3F3EA;color:#237A4B} .c-General{background:#EEF0F4;color:#5E6878}
+  .venc{color:var(--rojo);font-weight:700} .hoy{color:var(--ambar);font-weight:700}
+  .sin{color:var(--ambar);font-style:italic}
+  .com{font-size:12.5px;color:var(--suave);white-space:pre-line;margin-top:3px}
+  .acc{white-space:nowrap;text-align:right}
+  .edit{display:grid;grid-template-columns:96px 1fr 1fr 150px 140px;gap:8px;margin:6px 0}
+  .fila-extra td{background:#F8FAFD}
+  /* plan y compras */
+  .plan label{display:block;font-size:12px;color:var(--suave);font-weight:600;margin:8px 0 3px}
+  .plan textarea{min-height:120px;resize:vertical;font-size:16px;line-height:1.45}
+  .nota-plan{font-size:12px;color:var(--suave);margin-top:6px}
+  .pdp-pasos{margin:0;padding-left:20px;font-size:14px;line-height:1.5} .pdp-pasos li{margin-bottom:4px}
+  .pdp-vuelta{margin-top:8px;font-size:13px;color:var(--azul);background:var(--azul-f);border-radius:8px;padding:8px 10px}
+  .guardado{font-size:12px;color:var(--verde);margin-left:auto;font-weight:400}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .tile{background:var(--azul-f);border-radius:10px;padding:8px 10px;text-align:center;font-size:12px;color:var(--suave)}
+  .tile b{display:block;font-size:26px;color:var(--azul)}
+  .tile.alerta b{color:var(--rojo)}
+  .lista-c{font-size:13px;margin:0;padding-left:16px} .lista-c li{margin-bottom:3px}
+  .vacio{color:var(--suave);font-size:13px}
+  #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:20}
+  #toast.err{background:var(--rojo)}
+  @media (max-width:1450px){ header .fecha{display:none} }
+  @media (max-width:1250px){
+    main{grid-template-columns:1fr 1fr}
+    .col3{grid-column:1 / span 2;grid-row:auto}
+    .alta,.edit{grid-template-columns:1fr 1fr}
+  }
+  .panel,.col3{min-width:0} .temas td,.com,.lista-c li{overflow-wrap:anywhere}
+  @media (max-width:760px){ main{grid-template-columns:minmax(0,1fr);padding:12px} .acciones-panel,.col3{grid-column:auto} .agenda{display:none}
+    header{padding:10px 12px;gap:10px} header h1{font-size:19px} .reloj{font-size:20px;min-width:0}
+    .panel{padding:12px 14px} .panel h2{flex-wrap:wrap} .panel h2 small{margin-left:0;width:100%;font-size:12px}
+    .oee{font-size:44px} .stats{gap:12px} .stats b{font-size:18px}
+    .parada{grid-template-columns:110px 1fr 50px}
+    .maq td:nth-child(4){display:none} .maq td{white-space:nowrap}
+    .alta,.edit{grid-template-columns:1fr 1fr} #a_problema,#a_accion,#e_problema,#e_accion{grid-column:1 / -1}
+    .temas,.temas tbody,.temas tr,.temas td{display:block} .temas tr:first-child{display:none}
+    .temas tr{padding:10px 0;border-bottom:1px solid #EEF0F4} .temas td{border:0;padding:2px 0}
+    .temas td:nth-child(1),.temas td:nth-child(2),.temas td:nth-child(4),.temas td:nth-child(5){display:inline-block;margin-right:10px;font-size:13px}
+    .temas td:nth-child(4):not(:empty)::before{content:'Quién: ';color:var(--suave)} .temas td:nth-child(5):not(:empty)::before{content:'Para: ';color:var(--suave)}
+    .temas td.acc{text-align:left;margin-top:6px} .temas tr.fila-extra td{display:block}
+    .tiles b{font-size:22px} }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo-emp" style="display:inline-flex;align-items:center;background:#fff;border-radius:8px;padding:4px 8px;flex:none"><img src="LOGO_BASE64" alt="Aparisi Cepillos" style="height:40px;width:auto;display:block"></span>
+  <h1>TOP 15</h1>
+  <span class="fecha" id="fecha"></span>
+  <div class="agenda" id="agenda"></div>
+  <span class="reloj" id="reloj">15:00</span>
+  <button class="h" id="btnReloj" onclick="relojToggle()">Empezar</button>
+  <span class="sp"></span>
+  <button class="h" onclick="refrescarKpi()" title="Volver a leer los indicadores">⟳ Datos</button>
+  <a href="<?= url ?>">Inicio</a>
+</header>
+<main id="main"><div class="panel">Cargando…</div></main>
+<div id="toast"></div>
+
+<script>
+const URL_APP = '<?= url ?>';
+const PASOS = [
+  {n:1, t:'Indicadores', min:4, paneles:['p-Indus','p-Agro']},
+  {n:2, t:'Problemas y acciones', min:4, paneles:['p-acciones']},
+  {n:3, t:'PDP', min:5, paneles:['p-pdp']},
+  {n:4, t:'Compras · avisos', min:2, paneles:['p-compras','p-plan']},
+];
+let D = null, FILTRO = 'abiertas', EXTRA = null, INICIO = null, TICK = null;
+
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct = v => v == null ? '—' : Math.round(v * 100) + '%';
+const num = v => v == null ? '—' : Number(v).toLocaleString('es-ES');
+const DIAS = ['dom','lun','mar','mié','jue','vie','sáb'];
+const fCorta = s => { if (!s) return ''; const d = new Date(s + 'T12:00:00'); return DIAS[d.getDay()] + ' ' + s.slice(8,10) + '/' + s.slice(5,7); };
+function toast(m, err){ const t = document.getElementById('toast'); t.textContent = m; t.className = err ? 'err' : ''; t.style.display = 'block'; clearTimeout(toast._t); toast._t = setTimeout(() => t.style.display = 'none', err ? 6000 : 2000); }
+function llamar(fn, ...a){ return new Promise((ok, ko) => google.script.run.withSuccessHandler(ok).withFailureHandler(ko)[fn](...a)); }
+
+// Carga en dos tiempos: la pantalla (acciones, compras, avisos) se pinta enseguida
+// y los indicadores llegan en paralelo y solo repintan sus dos tarjetas.
+function cargar(forzarKpi){
+  const pKpi = llamar(forzarKpi ? 't15RefrescarKpi' : 't15Kpi', false);
+  llamar('t15Base').then(base => {
+    const ind = D ? D.indicadores : undefined, err = D ? D.errorKpi : '';
+    D = base; D.indicadores = ind; D.errorKpi = err;
+    pintar();
+    return pKpi;
+  }).then(k => {
+    D.indicadores = k.indicadores; D.errorKpi = k.errorKpi;
+    pintarKpi();
+    if (forzarKpi) toast('Indicadores actualizados');
+  }).catch(e => toast('No se pudo cargar: ' + (e.message || e), true));
+}
+function refrescarKpi(){ toast('Leyendo indicadores…'); cargar(true); }
+function pintarKpi(){
+  if (!D) return;
+  ['Indus','Agro'].forEach(sec => {
+    const el = document.getElementById('p-'+sec);
+    if (el) el.outerHTML = panelSeccion(sec, D.indicadores && D.indicadores.secciones[sec]);
+  });
+  pintarAgenda();
+}
+
+/* ─── reloj de la reunión ─── */
+function relojToggle(){
+  if (INICIO){ INICIO = null; clearInterval(TICK); document.getElementById('btnReloj').textContent = 'Empezar'; pintarAgenda(); return; }
+  INICIO = Date.now(); document.getElementById('btnReloj').textContent = 'Reiniciar';
+  TICK = setInterval(pintarAgenda, 1000); pintarAgenda();
+}
+function pasoActual(){
+  if (!INICIO) return {i:-1, resta:15*60, total:0};
+  const s = (Date.now() - INICIO) / 1000; let acc = 0;
+  for (let i = 0; i < PASOS.length; i++){ acc += PASOS[i].min * 60; if (s < acc) return {i, resta:acc - s, total:s}; }
+  return {i:PASOS.length, resta:0, total:s};
+}
+function pintarAgenda(){
+  const p = pasoActual();
+  document.getElementById('agenda').innerHTML = PASOS.map((x, i) =>
+    '<div class="paso '+(i===p.i?'on':(i<p.i?'pasado':''))+'"><b>'+x.n+' · '+esc(x.t)+'</b>'+x.min+' min</div>').join('');
+  const r = document.getElementById('reloj');
+  const fin = 15*60 - p.total;
+  const m = Math.floor(Math.abs(fin)/60), s = Math.floor(Math.abs(fin)%60);
+  r.textContent = (fin < 0 ? '+' : '') + m + ':' + String(s).padStart(2,'0');
+  r.classList.toggle('tarde', fin < 0);
+  document.querySelectorAll('.panel').forEach(el => el.classList.remove('activo'));
+  if (p.i >= 0 && p.i < PASOS.length) PASOS[p.i].paneles.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('activo'); });
+}
+
+/* ─── pintado ─── */
+function pintar(){
+  const d = new Date(D.hoy + 'T12:00:00');
+  const fl = d.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('fecha').textContent = fl.charAt(0).toUpperCase() + fl.slice(1);
+  const ind = D.indicadores;
+  let h = '';
+  ['Indus','Agro'].forEach(sec => h += panelSeccion(sec, ind && ind.secciones[sec]));
+  h += '<div class="col3">' + panelPdp() + panelCompras() + panelPlan() + '</div>';
+  h += panelAcciones();
+  document.getElementById('main').innerHTML = h;
+  pintarAgenda();
+}
+
+function panelSeccion(sec, s){
+  let h = '<section class="panel" id="p-'+sec+'"><h2><span class="n">1</span>'+sec+'<small>';
+  if (D.indicadores === undefined && !D.errorKpi){
+    return h + '</small></h2><div class="cargando-kpi"><span class="spin" aria-hidden="true"></span>Cargando indicadores…</div></section>';
+  }
+  if (!s || !s.ultimo){
+    h += '</small></h2>';
+    if (D.errorKpi) h += '<div class="aviso-err">'+esc(D.errorKpi)+'</div>';
+    return h + '<div class="vacio">Sin datos de producción recientes.</div></section>';
+  }
+  const u = s.ultimo, obj = s.objetivo;
+  const cls = u.oee == null ? 'nd' : (u.oee >= obj ? 'ok' : 'ko');
+  const linkInf = D.informeUrl ? ' · <a href="'+esc(D.informeUrl)+'?informe='+(sec==='Agro'?'agro':'industrial')+'&periodo=dia&fecha='+esc(u.dia)+'" target="_blank" rel="noopener">Informe del día ↗</a>' : '';
+  h += esc(fCorta(u.dia)) + (D.indicadores.generado ? ' · leído '+esc(D.indicadores.generado) : '') + linkInf + '</small></h2>';
+  if (D.indicadores.avisos && D.indicadores.avisos.length && sec === 'Indus') h += '<div class="aviso-err">'+D.indicadores.avisos.map(esc).join('<br>')+'</div>';
+  h += '<div class="kpi-top"><div><div class="oee '+cls+'">'+pct(u.oee)+'</div><div class="oee-lbl">OEE · objetivo '+pct(obj)+'</div></div>'+
+       '<div class="stats"><div><b>'+num(u.buenas)+'</b>uds buenas</div><div><b>'+pct(u.calidad)+'</b>calidad</div><div><b>'+num(u.horas)+'</b>h máquina</div></div></div>';
+  h += '<div class="sub">Últimos días (OEE)</div>' + tendencia(s.tendencia, obj);
+  if (u.paradas.length){
+    const max = u.paradas[0].min;
+    h += '<div class="sub">Paradas de ayer</div>' + u.paradas.slice(0,3).map(p =>
+      '<div class="parada"><span>'+esc(p.causa)+'</span><span class="barra"><i style="width:'+Math.max(4, p.min/max*100)+'%"></i></span><span>'+p.min+' min</span></div>').join('');
+  }
+  h += '<div class="sub">Por máquina (peor primero)</div><table class="maq">' + u.maquinas.map(m =>
+    '<tr class="'+(m.oee != null && m.oee < obj ? 'ko' : '')+'"><td>'+esc(m.nombre)+'</td><td class="r">'+pct(m.oee)+'</td><td class="r">'+num(m.buenas)+' uds</td><td class="r">'+(m.parada ? esc(m.parada.causa)+' '+m.parada.min+'′' : '')+'</td></tr>').join('') + '</table>';
+  if (u.averias.length) h += '<div class="averias">Averías: '+u.averias.map(esc).join(' · ')+'</div>';
+  return h + '</section>';
+}
+
+function tendencia(t, obj){
+  if (!t || !t.length) return '<div class="vacio">—</div>';
+  return '<div class="tend" role="img" aria-label="OEE de los últimos días"><i class="obj" style="bottom:calc(18px + '+(obj*56)+'px)" title="Objetivo '+pct(obj)+'"></i>' + t.map((d, i) => {
+    const v = d.oee == null ? 0 : Math.min(d.oee, 1);
+    const cls = (d.oee != null && d.oee >= obj ? 'ok' : 'ko') + (i === t.length - 1 ? ' ult' : '');
+    return '<div class="col"><span class="v">'+pct(d.oee)+'</span><span class="b '+cls+'" style="height:'+Math.max(2, v*56)+'px"></span><span class="d">'+d.dia.slice(8,10)+'/'+d.dia.slice(5,7)+'</span></div>';
+  }).join('') + '</div>';
+}
+
+function panelCompras(){
+  const c = D.compras;
+  let h = '<section class="panel" id="p-compras"><h2><span class="n">4</span>Compras<small><a href="'+URL_APP+'?app=compras&kiosko=1">Abrir compras</a></small></h2>';
+  h += '<div class="tiles"><div class="tile '+(c.pendientesValidar?'alerta':'')+'"><b>'+c.pendientesValidar+'</b>Solicitadas</div>'+
+       '<div class="tile"><b>'+c.paraComprar+'</b>Validadas</div><div class="tile '+(c.bloqueadas?'alerta':'')+'"><b>'+c.bloqueadas+'</b>Atascadas</div></div>';
+  h += '<div class="sub" style="margin-top:4px">Urgentes</div>' + (c.urgentes.length ? '<ul class="lista-c">'+c.urgentes.map(u => '<li><b>'+esc(u.seccion)+'</b> · '+esc(u.txt)+' <span class="pb">('+esc(u.estado)+')</span></li>').join('')+'</ul>' : '<div class="vacio">Ninguna.</div>');
+  h += '<div class="sub">Llega hoy o va con retraso</div>' + (c.llegan.length ? '<ul class="lista-c">'+c.llegan.map(u => '<li class="'+(u.entrega < D.hoy ? 'venc' : '')+'">'+esc(u.txt)+' · '+esc(fCorta(u.entrega))+'</li>').join('')+'</ul>' : '<div class="vacio">Nada pendiente de llegar.</div>');
+  return h + '</section>';
+}
+
+function panelPdp(){
+  return '<section class="panel pdp" id="p-pdp"><h2><span class="n">3</span>Planificación<small>en el PDP</small></h2>'+
+    '<ol class="pdp-pasos">'+
+      '<li>Abre el <b>Excel del PDP</b> desde el acceso directo del escritorio.</li>'+
+      '<li>Cada encargado dice <b>qué hay ahora en cada máquina</b>.</li>'+
+      '<li>Se contrasta con el plan: <b>retrasos y adelantos</b>.</li>'+
+      '<li>Si una desviación requiere algo, se apunta como <b>acción</b> en «Problemas y acciones».</li>'+
+    '</ol><div class="pdp-vuelta">Después, vuelve a esta pantalla para cerrar con compras y avisos.</div></section>';
+}
+function panelPlan(){
+  const p = D.plan;
+  return '<section class="panel plan" id="p-plan"><h2><span class="n">4</span>Avisos del día<span class="guardado" id="guardado"></span></h2>'+
+    '<textarea id="d_avisos" aria-label="Avisos del día" placeholder="Ausencias y refuerzos, visitas, camiones, pedidos con riesgo de plazo, recordatorios…" onchange="guardarDia(\'avisos\', this.value)">'+esc(p.avisos)+'</textarea>'+
+    '<div class="nota-plan">Se guarda al salir del campo. Mañana empieza vacío; los de días anteriores quedan en la hoja.</div>'+
+    '<datalist id="personas">'+D.personas.map(n => '<option value="'+esc(n)+'">').join('')+'</datalist></section>';
+}
+
+function estadoFecha(t){
+  if (t.estado === 'Hecha' || !t.fechaCompromiso) return '';
+  return t.fechaCompromiso < D.hoy ? 'venc' : (t.fechaCompromiso === D.hoy ? 'hoy' : '');
+}
+function panelAcciones(){
+  const abiertas = D.temas.filter(t => t.estado !== 'Hecha');
+  const vencidas = abiertas.filter(t => estadoFecha(t) === 'venc').length;
+  let lista = FILTRO === 'hechas' ? D.temas.filter(t => t.estado === 'Hecha')
+            : abiertas.filter(t => FILTRO === 'abiertas' || t.seccion === FILTRO);
+  lista = lista.slice().sort((a, b) => {
+    const r = x => x.estado === 'Hecha' ? 3 : (!x.accion ? 0 : (estadoFecha(x) === 'venc' ? 1 : 2));
+    return r(a) - r(b) || String(a.fechaCompromiso || '9').localeCompare(String(b.fechaCompromiso || '9'));
+  });
+  let h = '<section class="panel acciones-panel" id="p-acciones"><h2><span class="n">2</span>Problemas y acciones<small>'+
+          abiertas.length+' abiertas'+(vencidas ? ' · <span class="venc">'+vencidas+' vencidas</span>' : '')+'</small></h2>';
+  h += '<div class="alta" onkeydown="if(event.key===\'Enter\'&&event.target.tagName!==\'SELECT\')nuevoTema()">'+
+       '<select id="a_seccion">'+D.secciones.map(s => '<option>'+esc(s)+'</option>').join('')+'</select>'+
+       '<input id="a_problema" placeholder="Problema (palabras clave)">'+
+       '<input id="a_accion" placeholder="Acción">'+
+       '<input id="a_responsable" list="personas" placeholder="Quién">'+
+       '<input id="a_fecha" type="date" min="'+D.hoy+'" title="Para cuándo">'+
+       '<button class="btn" onclick="nuevoTema()">Añadir</button></div>';
+  const f = (v, t) => '<button class="'+(FILTRO===v?'on':'')+'" onclick="FILTRO=\''+v+'\';EXTRA=null;pintar()">'+t+'</button>';
+  h += '<div class="filtros">'+f('abiertas','Abiertas')+f('Indus','Indus')+f('Agro','Agro')+f('General','General')+f('hechas','Hechas (7 días)')+'</div>';
+  if (!lista.length) return h + '<div class="vacio">Nada aquí.</div></section>';
+  h += '<table class="temas"><tr><th style="width:62px">Nº</th><th style="width:80px">Sección</th><th>Problema → acción</th><th style="width:150px">Quién</th><th style="width:100px">Cuándo</th><th style="width:150px"></th></tr>';
+  lista.forEach(t => {
+    const ult = t.comentarios ? t.comentarios.split('\n').slice(-1)[0] : '';
+    const nCom = t.comentarios ? t.comentarios.split('\n').length : 0;
+    h += '<tr class="'+(t.estado==='Hecha'?'hecha':'')+'"><td>'+esc(t.id)+'</td><td><span class="chip c-'+esc(t.seccion)+'">'+esc(t.seccion)+'</span></td>'+
+         '<td>'+(t.problema ? '<div class="pb">'+esc(t.problema)+'</div>' : '')+(t.accion ? esc(t.accion) : '<span class="sin">Sin acción definida</span>')+
+         (ult ? '<div class="com">'+esc(ult)+(nCom > 1 ? ' (+'+(nCom-1)+')' : '')+'</div>' : '')+'</td>'+
+         '<td>'+esc(t.responsable)+'</td><td class="'+estadoFecha(t)+'">'+esc(fCorta(t.fechaCompromiso))+'</td><td class="acc">'+
+         (t.estado === 'Hecha'
+           ? '<button class="btn sec mini" onclick="accion(\'reabrir\',\''+esc(t.id)+'\')">Reabrir</button>'
+           : '<button class="btn ok mini" onclick="accion(\'cerrar\',\''+esc(t.id)+'\')">✓ Hecha</button> '+
+             '<button class="btn sec mini" onclick="abrirExtra(\''+esc(t.id)+'\',\'com\')" title="Comentar">💬</button> '+
+             '<button class="btn sec mini" onclick="abrirExtra(\''+esc(t.id)+'\',\'edit\')" title="Editar">✎</button>')+
+         '</td></tr>';
+    if (EXTRA && EXTRA.id === t.id) h += '<tr class="fila-extra"><td colspan="6">' + (EXTRA.modo === 'com' ? formComentario(t) : formEditar(t)) + '</td></tr>';
+  });
+  return h + '</table></section>';
+}
+function formComentario(t){
+  return (t.comentarios ? '<div class="com" style="margin-bottom:6px">'+esc(t.comentarios)+'</div>' : '')+
+    '<div style="display:flex;gap:8px"><input id="x_com" style="flex:1;border:1px solid var(--borde);border-radius:8px;padding:8px 10px" placeholder="Comentario corto" onkeydown="if(event.key===\'Enter\')accion(\'comentar\',\''+esc(t.id)+'\',{comentario:this.value})">'+
+    '<button class="btn" onclick="accion(\'comentar\',\''+esc(t.id)+'\',{comentario:document.getElementById(\'x_com\').value})">Guardar</button>'+
+    '<button class="btn sec" onclick="EXTRA=null;pintar()">Cancelar</button></div>';
+}
+function formEditar(t){
+  return '<div class="edit"><select id="e_seccion">'+D.secciones.map(s => '<option '+(s===t.seccion?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select>'+
+    '<input id="e_problema" value="'+esc(t.problema)+'" placeholder="Problema"><input id="e_accion" value="'+esc(t.accion)+'" placeholder="Acción">'+
+    '<input id="e_responsable" list="personas" value="'+esc(t.responsable)+'" placeholder="Quién"><input id="e_fecha" type="date" value="'+esc(t.fechaCompromiso)+'"></div>'+
+    '<div style="display:flex;gap:8px"><button class="btn" onclick="guardarEdicion(\''+esc(t.id)+'\')">Guardar cambios</button><button class="btn sec" onclick="EXTRA=null;pintar()">Cancelar</button></div>';
+}
+function abrirExtra(id, modo){
+  EXTRA = (EXTRA && EXTRA.id === id && EXTRA.modo === modo) ? null : {id, modo};
+  pintar();
+  const el = document.getElementById(modo === 'com' ? 'x_com' : 'e_accion'); if (el) el.focus();
+}
+
+/* ─── escritura ─── */
+async function enviar(tipo, id, datos, msg){
+  try {
+    const ind = D.indicadores, err = D.errorKpi;
+    D = await llamar('t15Accion', tipo, id, datos); D.indicadores = ind; D.errorKpi = err;
+    EXTRA = null; pintar(); if (msg) toast(msg); return true;
+  }
+  catch(e){ toast(String(e.message || e).replace(/^Error:\s*/, ''), true); return false; }
+}
+async function nuevoTema(){
+  const g = k => document.getElementById('a_'+k).value;
+  const datos = {seccion:g('seccion'), problema:g('problema'), accion:g('accion'), responsable:g('responsable'), fechaCompromiso:g('fecha')};
+  const sec = datos.seccion;
+  if (await enviar('nuevoTema', null, datos, 'Añadido')){
+    document.getElementById('a_seccion').value = sec; document.getElementById('a_problema').focus();
+  }
+}
+function accion(tipo, id, datos){ enviar(tipo, id, datos || {}, {cerrar:'Hecha ✓', reabrir:'Reabierta', comentar:'Comentario guardado'}[tipo]); }
+function guardarEdicion(id){
+  const g = k => document.getElementById('e_'+k).value;
+  enviar('editarTema', id, {seccion:g('seccion'), problema:g('problema'), accion:g('accion'), responsable:g('responsable'), fechaCompromiso:g('fecha')}, 'Guardado');
+}
+async function guardarDia(k, v){
+  try {
+    const nuevo = await llamar('t15Accion', 'guardarDia', null, {[k]: v});
+    D.plan = nuevo.plan;
+    const g = document.getElementById('guardado'); if (g){ g.textContent = 'Guardado ✓'; setTimeout(() => g.textContent = '', 2000); }
+  } catch(e){ toast('No se guardó: ' + (e.message || e), true); }
+}
+
+// Refresco automático cada 5 min si nadie está escribiendo
+setInterval(() => {
+  const a = document.activeElement;
+  if (!EXTRA && !(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) cargar();
+}, 5 * 60 * 1000);
+
+pintarAgenda();
+cargar();
+</script>
+</body>
+</html>

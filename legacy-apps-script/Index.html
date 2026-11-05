@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solicitudes de compra · Aparisi</title>
+<style>
+  :root{
+    --azul:#1F3864; --azul-2:#2E4E8A; --fondo:#F3F5F9; --tarjeta:#fff; --texto:#1B2333; --suave:#5E6878;
+    --borde:#DDE2EA; --rojo:#C0392B; --rojo-f:#FBEAEA; --ambar:#B7791F; --ambar-f:#FDF3E1;
+    --verde:#2F855A; --verde-f:#E6F4EC; --gris-f:#EEF0F4; --azul-f:#E8EEF8; --morado:#6B46C1; --morado-f:#EFEAFB;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--fondo);color:var(--texto);font-size:15px}
+  header{background:var(--azul);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+  header h1{font-size:16px;margin:0;font-weight:600;flex:1;line-height:1.2}
+  header h1 small{display:block;font-weight:400;opacity:.75;font-size:12px}
+  .chip-user{background:rgba(255,255,255,.15);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+  .icon-btn{background:none;border:0;color:#fff;font-size:18px;cursor:pointer;padding:4px 8px}
+  nav{display:flex;background:#fff;border-bottom:1px solid var(--borde);position:sticky;top:56px;z-index:4}
+  nav button{flex:1;border:0;background:none;padding:12px 6px;font-size:14px;color:var(--suave);cursor:pointer;border-bottom:3px solid transparent;font-weight:500}
+  nav button.on{color:var(--azul);border-bottom-color:var(--azul)}
+  .badge{display:inline-block;min-width:20px;padding:1px 6px;border-radius:999px;background:var(--rojo);color:#fff;font-size:12px;margin-left:4px}
+  main{max-width:820px;margin:0 auto;padding:16px}
+  .vacio{text-align:center;color:var(--suave);padding:40px 16px}
+  .card{background:var(--tarjeta);border:1px solid var(--borde);border-radius:10px;padding:14px;margin-bottom:12px}
+  .card.urg{border-left:5px solid var(--rojo)}
+  .card .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--suave)}
+  .card .tit{font-size:16px;font-weight:600;margin:6px 0 4px}
+  .card .meta{font-size:13px;color:var(--suave);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .card .com{margin-top:8px;font-size:13px;background:var(--gris-f);border-radius:6px;padding:8px 10px}
+  .est{padding:2px 8px;border-radius:999px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  .e-pend{background:var(--ambar-f);color:var(--ambar)} .e-alt{background:var(--morado-f);color:var(--morado)}
+  .e-val{background:var(--azul-f);color:var(--azul-2)} .e-falta{background:var(--rojo-f);color:var(--rojo)}
+  .e-comp{background:var(--verde-f);color:var(--verde)} .e-rec{background:var(--gris-f);color:var(--suave)} .e-rech{background:var(--gris-f);color:var(--suave);text-decoration:line-through}
+  .urg-tag{background:var(--rojo);color:#fff;padding:2px 8px;border-radius:999px;font-weight:700;font-size:11px}
+  .tarde{color:var(--rojo);font-weight:600}
+  .acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .btn{border:1px solid var(--azul);background:var(--azul);color:#fff;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;font-weight:500}
+  .btn.sec{background:#fff;color:var(--azul)} .btn.peligro{background:#fff;color:var(--rojo);border-color:var(--rojo)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .form{margin-top:12px;border-top:1px dashed var(--borde);padding-top:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .form .full{grid-column:1/-1}
+  label{font-size:12px;color:var(--suave);display:block;margin-bottom:3px;font-weight:500}
+  input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--borde);border-radius:7px;font-size:15px;font-family:inherit;background:#fff;color:var(--texto)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--azul-2);outline-offset:-1px}
+  .check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--texto)} .check input{width:auto}
+  .aviso{background:var(--azul-f);color:var(--azul);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+  .flujo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 22px minmax(0,1fr);gap:8px;margin-bottom:10px}
+  .etapa{position:relative;text-align:left;background:#fff;border:1px solid var(--borde);border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit;color:var(--texto);display:flex;flex-direction:column;gap:1px;min-height:44px}
+  .etapa .t{font-size:13.5px;font-weight:600}
+  .etapa b{font-size:26px;line-height:1.1}
+  .etapa .s{font-size:11.5px;color:var(--suave)}
+  .etapa.on{border:2px solid var(--azul);padding:8px 11px;box-shadow:0 0 0 3px rgba(31,56,100,.12)}
+  .etapa.paso::after{content:'›';position:absolute;right:-8px;top:50%;transform:translateY(-50%);color:#94A3B8;font-size:17px;line-height:1;background:var(--fondo);z-index:1}
+  .n-sol{color:var(--ambar)} .n-val{color:var(--azul-2)} .n-cam{color:var(--verde)} .n-rec{color:#475569}
+  .etapa.cero b{color:#A0AEC0}
+  .etapa.alerta{background:var(--rojo-f);border-color:#F2C4C0} .etapa.alerta b{color:var(--rojo)}
+  .etapa.alerta.on{border-color:var(--rojo);box-shadow:0 0 0 3px rgba(192,57,43,.15)}
+  .sepv{display:flex;align-items:center;justify-content:center;color:#CBD5E1;font-size:22px}
+  .barra2{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .barra2 select,.barra2 input[type=search]{width:auto;flex:1 1 170px;min-width:0}
+  .tog{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--borde);border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--texto);white-space:nowrap}
+  .tog .sw{width:30px;height:18px;border-radius:999px;background:#CBD5E1;position:relative;transition:background .15s;flex:none}
+  .tog .sw::after{content:'';position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
+  .tog.on{border-color:var(--rojo);color:var(--rojo);font-weight:600} .tog.on .sw{background:var(--rojo)} .tog.on .sw::after{left:14px}
+  .lnk{background:none;border:0;padding:0;color:var(--azul-2);text-decoration:underline;cursor:pointer;font:inherit;font-size:13px;white-space:nowrap}
+  .barra2 .der{margin-left:auto;display:flex;gap:14px;align-items:center}
+  .vistas{display:inline-flex;border:1px solid var(--borde);border-radius:8px;overflow:hidden}
+  .vistas button{border:0;background:#fff;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--suave)}
+  .vistas button.on{background:var(--azul);color:#fff}
+  .kan{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:start}
+  .kcol{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:10px;min-height:160px}
+  .kcol.alerta{border-color:#F2C4C0;background:#FFF8F7}
+  .kcol h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--suave);display:flex;justify-content:space-between}
+  .kcard{display:block;width:100%;text-align:left;border:1px solid var(--borde);border-radius:8px;padding:8px 9px;font:inherit;font-size:13px;margin-bottom:7px;background:#fff;cursor:pointer;color:var(--texto)}
+  .kcard:hover{border-color:var(--azul-2)}
+  .kcard.u{border-left:4px solid var(--rojo)}
+  .kcard small{display:block;color:var(--suave);font-size:11.5px;margin-top:2px}
+  .kcard .tarde{color:var(--rojo);font-weight:600}
+  @media (max-width:640px){ .flujo{grid-template-columns:repeat(2,minmax(0,1fr))} .sepv{display:none} .etapa.paso::after{display:none} .flujo .etapa.alerta,.flujo .etapa.atas{grid-column:1 / -1} .barra2 .der{margin-left:0;width:100%;justify-content:space-between} }
+  .filtros{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .login{max-width:420px;margin:40px auto;padding:0 16px}
+  .login h2{font-size:18px;color:var(--azul)}
+  .login .grupo{font-size:12px;text-transform:uppercase;color:var(--suave);margin:16px 0 6px;letter-spacing:.4px}
+  .login button{display:block;width:100%;text-align:left;margin-bottom:8px;background:#fff;border:1px solid var(--borde);border-radius:8px;padding:12px 14px;font-size:15px;cursor:pointer;color:var(--texto)}
+  .login button span{color:var(--suave);font-size:13px;margin-left:6px}
+  #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;display:none;max-width:90%;z-index:20}
+  #toast.err{background:var(--rojo)}
+  #cargando{position:fixed;inset:0;background:rgba(243,245,249,.6);display:none;align-items:center;justify-content:center;z-index:15;font-size:14px;color:var(--azul)}
+  body.kiosko main{max-width:1400px}
+  .sug{margin-top:6px;border:1px solid var(--borde);border-radius:8px;background:var(--gris-f);padding:6px;max-height:340px;overflow:auto}
+  .sug-cab{font-size:12px;color:var(--suave);padding:4px 6px 6px}
+  .sug-it{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--borde);border-radius:7px;padding:8px 10px;margin-bottom:5px;font:inherit;font-size:14px;cursor:pointer;color:var(--texto)}
+  .sug-it:hover,.sug-it:focus{border-color:var(--azul-2);outline:none}
+  .sug-it small{display:block;color:var(--suave);font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+  .sug-ab{display:inline-block;margin-top:4px;background:var(--ambar-f);color:var(--ambar);font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px}
+  @media (max-width:560px){ .form,.filtros{grid-template-columns:1fr} }
+  .t-corta{display:none}
+  @media (max-width:480px){ header h1 small,.t-larga{display:none} .t-corta{display:inline} header{gap:8px;padding:10px 12px} header h1{font-size:17px} .logo-emp img{height:28px !important}
+    .chip-user{max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .icon-btn{padding:4px 6px}
+    nav{top:50px} main{padding:12px} .card{padding:12px}
+    .acciones .btn{flex:1 1 auto} .form{grid-template-columns:1fr} }
+  @media (max-width:640px){ .barra2 select,.barra2 input[type=search]{flex:1 1 100%} .etapa{padding:8px 10px} .etapa b{font-size:22px} .etapa .s{font-size:11px} }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo-emp" style="display:inline-flex;align-items:center;background:#fff;border-radius:8px;padding:4px 8px;flex:none"><img src="LOGO_BASE64" alt="Aparisi Cepillos" style="height:34px;width:auto;display:block"></span>
+  <h1><span class="t-larga">Solicitudes de compra</span><span class="t-corta">Compras</span><small>Aparisi Cepillos · Producción</small></h1>
+  <a class="icon-btn" id="lnkInicio" href="<?= url ?>" title="Inicio" style="display:none;text-decoration:none;font-size:14px">Inicio</a>
+  <button class="icon-btn" id="btnRefrescar" title="Actualizar" onclick="cargar()">⟳</button>
+  <button class="chip-user" id="chipUser" onclick="cambiarUsuario()" style="display:none"></button>
+</header>
+<nav id="nav" style="display:none">
+  <button data-v="bandeja" onclick="ver('bandeja')">Mi bandeja<span class="badge" id="nBandeja" style="display:none"></span></button>
+  <button data-v="nueva" onclick="ver('nueva')">Nueva</button>
+  <button data-v="todas" onclick="ver('todas')">Todas</button>
+</nav>
+<main id="app"><div class="vacio">Cargando…</div></main>
+<div id="toast"></div>
+<div id="cargando">Guardando…</div>
+
+<script>
+let D = null;            // datos del servidor
+let U = null;            // usuario actual {nombre, rol, seccion}
+let VISTA = 'bandeja';
+let FILTRO = { estado: 'abiertas', seccion: '', texto: '' };
+let ABIERTO = null;      // formulario abierto: {id, tipo}
+let KIOSKO = false;      // PC compartido de planta: no se recuerda el usuario y se cierra la sesión por inactividad
+const KIOSKO_SEG = 0;      // cierre de sesión por inactividad en el PC de planta: 0 = desactivado (se sale con «Salir»)
+
+const ROLES = { ENC:'ENCARGADO', RESP:'RESPONSABLE', COMP:'COMPRAS', ADMIN:'ADMIN' };
+const ROL_TXT = { ENCARGADO:'Encargado', RESPONSABLE:'Responsable producción', COMPRAS:'Compras', ADMIN:'Admin' };
+
+/* ─── utilidades ─── */
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hoy = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const fmtF = f => { if(!f) return ''; const m = String(f).match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/); return m ? m[3]+'/'+m[2]+(m[4]?m[4]:'') : f; };
+const guardarLS = (k,v) => { try{ localStorage.setItem(k,v); }catch(e){} };
+const leerLS = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
+const esResp = () => U && (U.rol===ROLES.RESP || U.rol===ROLES.ADMIN);
+const esComp = () => U && (U.rol===ROLES.COMP || U.rol===ROLES.ADMIN);
+
+function toast(msg, err){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = err ? 'err' : ''; t.style.display = 'block';
+  clearTimeout(toast._t); toast._t = setTimeout(()=> t.style.display='none', err ? 6000 : 2500);
+}
+function llamar(fn, ...args){
+  return new Promise((ok, ko) => google.script.run.withSuccessHandler(ok).withFailureHandler(ko)[fn](...args));
+}
+
+/* ─── carga y usuario ─── */
+async function cargar(){
+  try{
+    D = await llamar('cmpDatos');
+    const guardado = KIOSKO ? (U && U.nombre) : leerLS('cmpUsuario');
+    U = D.usuarios.find(u => u.nombre === guardado) || null;
+    pintar();
+  }catch(e){
+    document.getElementById('app').innerHTML = '<div class="vacio">No se pudo cargar: '+esc(e.message||e)+'</div>';
+  }
+}
+function elegirUsuario(nombre){
+  U = D.usuarios.find(u => u.nombre === nombre); if (!KIOSKO) guardarLS('cmpUsuario', nombre);
+  VISTA = 'bandeja'; pintar();
+}
+function cambiarUsuario(){ U = null; ABIERTO = null; if (!KIOSKO) guardarLS('cmpUsuario',''); pintar(); }
+// En el PC de planta, la sesión se cierra sola tras un rato sin tocar nada
+let _inactivo = null;
+function vigilarInactividad(){
+  if (!KIOSKO || !KIOSKO_SEG) return;
+  clearTimeout(_inactivo);
+  _inactivo = setTimeout(() => { if (U){ cambiarUsuario(); toast('Sesión cerrada por inactividad'); } }, KIOSKO_SEG * 1000);
+}
+['click','keydown','touchstart'].forEach(ev => document.addEventListener(ev, vigilarInactividad, true));
+
+/* ─── reglas: ¿le toca a este usuario? (mismas que el servidor) ─── */
+function meToca(s){
+  const E = D.estados;
+  if (esResp() && s.estado===E.PENDIENTE) return true;
+  if (esComp() && s.estado===E.VALIDADA) return true;
+  if ((s.estado===E.ALTERNATIVA || s.estado===E.FALTA_INFO) && s.asignado===U.nombre) return true;
+  if (s.estado===E.COMPRADA && puedeRecibir(s)) return true;
+  return false;
+}
+function puedeRecibir(s){
+  return s.solicitante===U.nombre || U.rol===ROLES.ADMIN || (U.rol===ROLES.ENC && U.seccion && s.seccion===U.seccion);
+}
+function acciones(s){
+  const E = D.estados, a = [];
+  if (s.estado===E.PENDIENTE && esResp()){
+    a.push({tipo:'validar', txt:'Validar', campos:['referencia','cantidad','unidad','proveedor','fechaNecesaria','precio','comentarioOpc']});
+    a.push({tipo:'alternativa', txt:'Buscar alternativa', sec:true, campos:['asignadoEnc','comentario']});
+    a.push({tipo:'rechazar', txt:'Rechazar', peligro:true, campos:['comentario']});
+  }
+  if (s.estado===E.ALTERNATIVA && (s.asignado===U.nombre || esResp())){
+    a.push({tipo:'proponer', txt:'Proponer alternativa', campos:['articulo','referencia','proveedor','precio','cantidad','unidad','comentario']});
+    if (esResp()) a.push({tipo:'rechazar', txt:'Rechazar', peligro:true, campos:['comentario']});
+  }
+  if (s.estado===E.VALIDADA && esComp()){
+    a.push({tipo:'comprar', txt:'Registrar compra', campos:['pedidoProv','entregaPrevista','proveedor','precio','comentarioOpc']});
+    a.push({tipo:'faltaInfo', txt:'Falta información', sec:true, campos:['comentario']});
+  }
+  if (s.estado===E.FALTA_INFO && (s.asignado===U.nombre || esResp())){
+    a.push({tipo:'completar', txt:'Completar y devolver a Compras', campos:['referencia','proveedor','cantidad','unidad','fechaNecesaria','precio','comentario']});
+  }
+  if (s.estado===E.COMPRADA && puedeRecibir(s)){
+    a.push({tipo:'recibir', txt:'Marcar recibido', campos:[], directo:true});
+  }
+  if ([E.PENDIENTE,E.ALTERNATIVA,E.FALTA_INFO].includes(s.estado) && s.solicitante===U.nombre && !esResp()){
+    a.push({tipo:'anular', txt:'Anular', peligro:true, campos:['comentario']});
+  }
+  return a;
+}
+
+/* ─── pintado ─── */
+function pintar(){
+  const app = document.getElementById('app');
+  const nav = document.getElementById('nav'), chip = document.getElementById('chipUser');
+  if (!U){
+    nav.style.display='none'; chip.style.display='none';
+    app.innerHTML = vistaLogin(); return;
+  }
+  nav.style.display='flex'; chip.style.display='inline-block';
+  chip.textContent = KIOSKO ? U.nombre + ' · Salir' : U.nombre + ' ▾';
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.v===VISTA));
+  const nb = D.sols.filter(meToca).length, badge = document.getElementById('nBandeja');
+  badge.textContent = nb; badge.style.display = nb ? 'inline-block' : 'none';
+  app.innerHTML = VISTA==='nueva' ? vistaNueva() : VISTA==='todas' ? vistaTodas() : vistaBandeja();
+}
+function ver(v){ VISTA = v; ABIERTO = null; pintar(); window.scrollTo(0,0); }
+
+function vistaLogin(){
+  if (!D.usuarios.length) return '<div class="vacio">No hay usuarios. Rellena la pestaña <b>Usuarios</b> de la hoja.</div>';
+  const grupos = {};
+  D.usuarios.forEach(u => (grupos[u.rol] = grupos[u.rol] || []).push(u));
+  let h = '<div class="login"><h2>¿Quién eres?</h2>';
+  [ROLES.RESP, ROLES.ENC, ROLES.COMP, ROLES.ADMIN].forEach(r => {
+    if (!grupos[r]) return;
+    h += '<div class="grupo">'+esc(ROL_TXT[r]||r)+'</div>';
+    grupos[r].forEach(u => { h += '<button onclick="elegirUsuario(this.dataset.n)" data-n="'+esc(u.nombre)+'">'+esc(u.nombre)+(u.seccion?'<span>'+esc(u.seccion)+'</span>':'')+'</button>'; });
+  });
+  return h + '</div>';
+}
+
+function ordenar(lista){
+  return lista.slice().sort((a,b) => (b.urgente==='Sí') - (a.urgente==='Sí') || String(a.fechaNecesaria||'9').localeCompare(String(b.fechaNecesaria||'9')));
+}
+
+function vistaBandeja(){
+  const mias = ordenar(D.sols.filter(meToca));
+  const intro = {
+    RESPONSABLE: 'Solicitudes pendientes de tu validación. Revísalas en bloque (por ejemplo, en la reunión diaria), no una a una cuando llegan.',
+    COMPRAS: 'Solicitudes validadas listas para comprar. Si falta un dato, devuélvela al solicitante, no a la responsable.',
+    ENCARGADO: 'Lo que tienes pendiente: búsquedas de alternativa, datos que pide Compras y material por recibir.',
+    ADMIN: 'Todo lo pendiente de cualquier paso.'
+  }[U.rol] || '';
+  let h = '<div class="aviso">'+esc(intro)+'</div>';
+  if (!mias.length) return h + '<div class="vacio">Nada pendiente. 👌</div>';
+  return h + mias.map(tarjeta).join('');
+}
+
+// Etapas del circuito, en orden. Atascadas va aparte. «Solo urgentes» se combina con cualquiera.
+const ETAPAS = E => ({
+  porvalidar: { t:'Solicitadas', s:'por validar · Responsable', n:'n-sol', f: x => x.estado===E.PENDIENTE },
+  porcomprar: { t:'Validadas',   s:'por comprar · Compras',     n:'n-val', f: x => x.estado===E.VALIDADA },
+  encamino:   { t:'En camino',   s:'pendiente de recibir',      n:'n-cam', f: x => x.estado===E.COMPRADA },
+  recibidas:  { t:'Recibidas',   s:'últimos 60 días',   n:'n-rec', f: x => x.estado===E.RECIBIDA },
+  atascadas:  { t:'Atascadas',   s:'falta dato · alternativa', alerta:true, f: x => x.estado===E.FALTA_INFO || x.estado===E.ALTERNATIVA },
+});
+let SOLO_URG = false;
+let VISTA_TODAS = 'lista';   // 'lista' | 'tablero' (tablero solo en el PC de planta)
+function vistaTodas(){
+  const E = D.estados, ET = ETAPAS(E);
+  const abiertas = [E.PENDIENTE,E.ALTERNATIVA,E.VALIDADA,E.FALTA_INFO,E.COMPRADA];
+  const esAbierta = x => abiertas.includes(x.estado);
+  const txt = FILTRO.texto.toLowerCase();
+  const base = x => (!SOLO_URG || x.urgente==='Sí') && (!FILTRO.seccion || x.seccion===FILTRO.seccion) &&
+    (!txt || [x.id,x.articulo,x.referencia,x.proveedor,x.solicitante,x.pedidoProv].join(' ').toLowerCase().includes(txt));
+  const tablero = KIOSKO && VISTA_TODAS === 'tablero';
+
+  const boton = (k, paso) => {
+    const e = ET[k], n = D.sols.filter(x => e.f(x) && base(x)).length;
+    const on = !tablero && FILTRO.estado===k;
+    return '<button class="etapa'+(paso?' paso':'')+(k==='atascadas'?' atas':'')+(e.alerta && n?' alerta':'')+(on?' on':'')+(n?'':' cero')+'" data-v="'+k+'" '+
+           'onclick="VISTA_TODAS=\'lista\';filtrar(\'estado\', FILTRO.estado===this.dataset.v ? \'abiertas\' : this.dataset.v)">'+
+           '<span class="t">'+e.t+'</span><b class="'+(e.n||'')+'">'+n+'</b><span class="s">'+e.s+'</span></button>';
+  };
+  let h = '<div class="flujo">' + boton('porvalidar',1) + boton('porcomprar',1) + boton('encamino',1) + boton('recibidas',0) +
+          '<span class="sepv" aria-hidden="true">|</span>' + boton('atascadas',0) + '</div>';
+
+  const nUrg = D.sols.filter(x => x.urgente==='Sí' && esAbierta(x)).length;
+  const nRech = D.sols.filter(x => x.estado===E.RECHAZADA).length;
+  h += '<div class="barra2">'+
+       '<button class="tog'+(SOLO_URG?' on':'')+'" role="switch" aria-checked="'+SOLO_URG+'" onclick="SOLO_URG=!SOLO_URG;pintar()"><span class="sw"></span>Urgentes ('+nUrg+')</button>'+
+       '<select aria-label="Sección" onchange="filtrar(\'seccion\',this.value)"><option value="">Todas las secciones</option>'+
+         D.secciones.map(s => '<option '+(FILTRO.seccion===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select>'+
+       '<input type="search" aria-label="Buscar" placeholder="Buscar artículo, proveedor, ID…" value="'+esc(FILTRO.texto)+'" oninput="FILTRO.texto=this.value;clearTimeout(window._b);window._b=setTimeout(()=>{pintar();const i=document.querySelector(\'.barra2 input[type=search]\');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}},300)">'+
+       '<span class="der">'+
+         (!tablero && FILTRO.estado!=='abiertas' ? '<button class="lnk" onclick="filtrar(\'estado\',\'abiertas\')">Ver todas las abiertas</button>' : '')+
+         (FILTRO.estado==='rechazadas' && !tablero ? '<strong style="font-size:13px">Rechazadas</strong>' : '<button class="lnk" onclick="VISTA_TODAS=\'lista\';filtrar(\'estado\',\'rechazadas\')">Ver rechazadas ('+nRech+')</button>')+
+         (KIOSKO ? '<span class="vistas" role="group" aria-label="Vista"><button class="'+(tablero?'':'on')+'" onclick="VISTA_TODAS=\'lista\';pintar()">Lista</button><button class="'+(tablero?'on':'')+'" onclick="VISTA_TODAS=\'tablero\';pintar()">Tablero</button></span>' : '')+
+       '</span></div>';
+
+  if (tablero){
+    const cols = ['porvalidar','atascadas','porcomprar','encamino','recibidas'];
+    h += '<div class="kan">' + cols.map(k => {
+      const e = ET[k], items = ordenar(D.sols.filter(x => e.f(x) && base(x)));
+      return '<div class="kcol'+(e.alerta && items.length?' alerta':'')+'"><h4><span>'+e.t+'</span><span>'+items.length+'</span></h4>'+
+        (items.length ? items.map(x => {
+          const tarde = x.fechaNecesaria && x.fechaNecesaria < hoy() && ![E.COMPRADA,E.RECIBIDA].includes(x.estado);
+          return '<button class="kcard'+(x.urgente==='Sí' && esAbierta(x)?' u':'')+'" onclick="irA(\''+esc(x.id)+'\',\''+k+'\')">'+
+                 '<strong>'+esc(x.cantidad)+' '+esc(x.unidad)+' · '+esc(x.articulo)+'</strong>'+
+                 '<small>'+esc(x.id)+' · '+esc(x.seccion)+(x.fechaNecesaria?' · <span class="'+(tarde?'tarde':'')+'">'+fmtF(x.fechaNecesaria)+'</span>':'')+'</small></button>';
+        }).join('') : '<div class="vacio" style="padding:16px 4px">—</div>') + '</div>';
+    }).join('') + '</div>';
+    return h;
+  }
+
+  const pasa = FILTRO.estado==='abiertas' ? esAbierta : FILTRO.estado==='rechazadas' ? (x => x.estado===E.RECHAZADA) : (ET[FILTRO.estado] ? ET[FILTRO.estado].f : esAbierta);
+  const lista = ordenar(D.sols.filter(x => pasa(x) && base(x)));
+  return h + (lista.length ? lista.map(tarjeta).join('') : '<div class="vacio">Sin resultados.</div>');
+}
+// Desde el tablero: abre la solicitud en la lista, filtrada por su etapa
+function irA(id, etapa){
+  VISTA_TODAS = 'lista'; FILTRO.estado = etapa; pintar();
+  const c = document.getElementById('c-'+id); if (c) { c.scrollIntoView({behavior:'smooth', block:'start'}); c.style.boxShadow='0 0 0 3px rgba(46,78,138,.35)'; setTimeout(()=>{ c.style.boxShadow=''; }, 1600); }
+}
+function filtrar(k, v){ FILTRO[k] = v; pintar(); }
+
+// Nombre que se enseña (en la hoja se guarda el estado interno)
+function nombreEstado(e){
+  const E = D.estados;
+  return {[E.PENDIENTE]:'Solicitada',[E.VALIDADA]:'Validada',[E.COMPRADA]:'En camino',[E.RECIBIDA]:'Recibida',[E.ALTERNATIVA]:'Atascada · buscar alternativa',[E.FALTA_INFO]:'Atascada · falta información',[E.RECHAZADA]:'Rechazada'}[e] || e;
+}
+function claseEstado(e){
+  const E = D.estados;
+  return {[E.PENDIENTE]:'e-pend',[E.ALTERNATIVA]:'e-alt',[E.VALIDADA]:'e-val',[E.FALTA_INFO]:'e-falta',[E.COMPRADA]:'e-comp',[E.RECIBIDA]:'e-rec',[E.RECHAZADA]:'e-rech'}[e]||'';
+}
+function pendienteDe(s){
+  if (!s.asignado) return '';
+  return ROL_TXT[s.asignado] || s.asignado;
+}
+
+function tarjeta(s){
+  const E = D.estados;
+  const abierta = ![E.RECIBIDA,E.RECHAZADA].includes(s.estado);
+  const tarde = abierta && s.estado!==E.COMPRADA && s.fechaNecesaria && s.fechaNecesaria < hoy();
+  const acc = acciones(s);
+  let h = '<div class="card'+(s.urgente==='Sí'&&abierta?' urg':'')+'" id="c-'+esc(s.id)+'">';
+  h += '<div class="top"><b>'+esc(s.id)+'</b><span class="est '+claseEstado(s.estado)+'">'+esc(nombreEstado(s.estado))+'</span>'+
+       (s.urgente==='Sí'&&abierta?'<span class="urg-tag">URGENTE</span>':'')+
+       (abierta&&s.asignado?'<span>→ '+esc(pendienteDe(s))+'</span>':'')+'</div>';
+  h += '<div class="tit">'+esc(s.cantidad)+' '+esc(s.unidad)+' · '+esc(s.articulo)+'</div>';
+  h += '<div class="meta">'+
+       '<span>'+esc(s.seccion)+' · '+esc(s.solicitante)+'</span>'+
+       (s.fechaNecesaria?'<span class="'+(tarde?'tarde':'')+'">Necesario: '+fmtF(s.fechaNecesaria)+(tarde?' (vencida)':'')+'</span>':'')+
+       (s.referencia?'<span>Ref: '+esc(s.referencia)+'</span>':'')+
+       (s.proveedor?'<span>Prov: '+esc(s.proveedor)+'</span>':'<span>Sin proveedor (lo busca Compras)</span>')+
+       (s.precio!==''?'<span>~'+esc(s.precio)+' €</span>':'')+
+       (s.pedidoProv?'<span>Pedido: '+esc(s.pedidoProv)+'</span>':'')+
+       (s.entregaPrevista&&s.estado===E.COMPRADA?'<span>Llega: '+fmtF(s.entregaPrevista)+'</span>':'')+
+       (s.fechaRecepcion?'<span>Recibido '+fmtF(s.fechaRecepcion)+' ('+esc(s.recibidoPor)+')</span>':'')+
+       '</div>';
+  if (s.motivo) h += '<div class="com"><b>Motivo:</b> '+esc(s.motivo)+'</div>';
+  if (s.comentario) h += '<div class="com"><b>Último comentario:</b> '+esc(s.comentario)+'</div>';
+  if (acc.length){
+    h += '<div class="acciones">'+acc.map(a =>
+      '<button class="btn '+(a.sec?'sec':'')+(a.peligro?' peligro':'')+'" onclick="'+(a.directo?'enviar':'abrir')+'(\''+esc(s.id)+'\',\''+a.tipo+'\')">'+esc(a.txt)+'</button>').join('')+'</div>';
+    if (ABIERTO && ABIERTO.id===s.id){
+      const a = acc.find(x => x.tipo===ABIERTO.tipo);
+      if (a) h += formulario(s, a);
+    }
+  }
+  return h + '</div>';
+}
+
+const CAMPO = {
+  articulo:      {l:'Artículo / descripción', t:'text', full:true},
+  referencia:    {l:'Referencia', t:'text'},
+  cantidad:      {l:'Cantidad', t:'number'},
+  unidad:        {l:'Unidad', t:'unidad'},
+  proveedor:     {l:'Proveedor', t:'text'},
+  fechaNecesaria:{l:'Fecha necesaria', t:'date'},
+  precio:        {l:'Precio estimado (€)', t:'number'},
+  pedidoProv:    {l:'Nº pedido proveedor', t:'text'},
+  entregaPrevista:{l:'Entrega prevista *', t:'date'},
+  asignadoEnc:   {l:'¿Qué encargado la busca? *', t:'encargado', full:true},
+  comentario:    {l:'Comentario *', t:'area', full:true},
+  comentarioOpc: {l:'Comentario (opcional)', t:'area', full:true},
+};
+function campoHTML(k, s){
+  const d = CAMPO[k], v = s[k] == null ? '' : s[k], id = 'f_'+k;
+  let i;
+  if (d.t==='area') i = '<textarea id="'+id+'"></textarea>';
+  else if (d.t==='unidad') i = '<select id="'+id+'">'+D.unidades.map(u => '<option '+(u===v?'selected':'')+'>'+esc(u)+'</option>').join('')+(v&&!D.unidades.includes(v)?'<option selected>'+esc(v)+'</option>':'')+'</select>';
+  else if (d.t==='encargado') i = '<select id="'+id+'"><option value="">—</option>'+D.usuarios.filter(u=>u.rol===ROLES.ENC).map(u => '<option value="'+esc(u.nombre)+'" '+(u.seccion===s.seccion?'selected':'')+'>'+esc(u.nombre)+(u.seccion?' ('+esc(u.seccion)+')':'')+'</option>').join('')+'</select>';
+  else i = '<input id="'+id+'" type="'+(d.t==='number'?'number':d.t)+'" '+(d.t==='number'?'step="any" inputmode="decimal"':'')+' value="'+esc(v)+'">';
+  return '<div class="'+(d.full?'full':'')+'"><label for="'+id+'">'+esc(d.l)+'</label>'+i+'</div>';
+}
+function formulario(s, a){
+  const nota = a.tipo==='validar' ? '<div class="full aviso" style="margin:0">Al validar, Compras debe tener todo para pedir sin preguntar: artículo, cantidad, unidad y fecha. El proveedor es opcional: si lo sabes, ponlo.</div>' : '';
+  return '<div class="form">'+nota+a.campos.map(k => campoHTML(k, s)).join('')+
+    '<div class="full acciones" style="margin-top:0"><button class="btn'+(a.peligro?' peligro':'')+'" onclick="enviar(\''+esc(s.id)+'\',\''+a.tipo+'\')">Confirmar: '+esc(a.txt)+'</button>'+
+    '<button class="btn sec" onclick="ABIERTO=null;pintar()">Cancelar</button></div></div>';
+}
+function abrir(id, tipo){
+  ABIERTO = (ABIERTO && ABIERTO.id===id && ABIERTO.tipo===tipo) ? null : {id, tipo};
+  pintar();
+  const c = document.getElementById('c-'+id); if (c && ABIERTO) c.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function enviar(id, tipo){
+  const s = D.sols.find(x => x.id===id), a = acciones(s).find(x => x.tipo===tipo);
+  const datos = {};
+  (a.campos||[]).forEach(k => {
+    const el = document.getElementById('f_'+k); if (!el) return;
+    const key = k==='asignadoEnc' ? 'asignado' : k==='comentarioOpc' ? 'comentario' : k;
+    datos[key] = el.value;
+  });
+  await ejecutar(tipo, id, datos, {recibir:'Marcado como recibido', validar:'Validada → pasa a Compras', comprar:'Compra registrada'}[tipo] || 'Guardado');
+}
+
+async function ejecutar(tipo, id, datos, ok){
+  const carg = document.getElementById('cargando'); carg.style.display = 'flex';
+  try{
+    D = await llamar('cmpAccion', tipo, id, datos, U.nombre);
+    ABIERTO = null; toast(ok); pintar(); return true;
+  }catch(e){
+    toast(String(e.message||e).replace(/^Error:\s*/,''), true); return false;
+  }finally{ carg.style.display = 'none'; }
+}
+
+/* ─── nueva solicitud ─── */
+function vistaNueva(){
+  const sec = U.seccion || '';
+  return '<div class="aviso">Pide aquí todo el material, no de palabra ni por WhatsApp. Las solicitudes se revisan cada día en la reunión de inicio de turno. Marca <b>urgente</b> solo si para una máquina o un pedido.</div>'+
+  '<div class="card"><div class="form" style="border:0;margin:0;padding:0">'+
+    '<div><label for="n_seccion">Sección</label><select id="n_seccion">'+D.secciones.map(x=>'<option '+(x===sec?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
+    '<div><label for="n_fechaNecesaria">¿Para cuándo lo necesitas? *</label><input id="n_fechaNecesaria" type="date" min="'+hoy()+'"></div>'+
+    '<div class="full"><label for="n_articulo">¿Qué necesitas? *</label><input id="n_articulo" autocomplete="off" placeholder="Escribe una palabra y verás lo que ya se ha pedido. Ej.: broca, filamento…" oninput="clearTimeout(window._sg);window._sg=setTimeout(sugerir,150)" onkeydown="if(event.key===\'Escape\')ocultarSug()"><div id="n_sug" class="sug" style="display:none"></div></div>'+
+    '<div><label for="n_cantidad">Cantidad *</label><input id="n_cantidad" type="number" step="any" inputmode="decimal"></div>'+
+    '<div><label for="n_unidad">Unidad</label><select id="n_unidad">'+D.unidades.map(u=>'<option>'+esc(u)+'</option>').join('')+'</select></div>'+
+    '<div><label for="n_referencia">Referencia (si la sabes)</label><input id="n_referencia"></div>'+
+    '<div><label for="n_proveedor">Proveedor habitual (si lo sabes)</label><input id="n_proveedor"></div>'+
+    '<div class="full check"><input type="checkbox" id="n_urgente" onchange="document.getElementById(\'n_motivoLbl\').textContent=this.checked?\'Motivo de la urgencia *\':\'¿Para qué es? (opcional)\'"><label for="n_urgente" style="margin:0;font-size:14px;color:var(--rojo);font-weight:600">Urgente: para una máquina o un pedido</label></div>'+
+    '<div class="full"><label for="n_motivo" id="n_motivoLbl">¿Para qué es? (opcional)</label><textarea id="n_motivo"></textarea></div>'+
+    '<div class="full acciones" style="margin-top:4px"><button class="btn" onclick="crear()">Enviar solicitud</button></div>'+
+  '</div></div>';
+}
+/* buscador de lo ya pedido: filtra el histórico mientras se escribe la descripción */
+const normTxt = v => String(v == null ? '' : v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+function sugerir(){
+  const caja = document.getElementById('n_sug'), inp = document.getElementById('n_articulo');
+  if (!caja || !inp) return;
+  const pals = normTxt(inp.value).split(/[\s,;]+/).filter(p => p.length >= 2);
+  const H = D.historico || [];
+  if (!pals.length || !H.length) return ocultarSug();
+  const res = H.filter(h => { const t = normTxt(h.articulo+' '+h.referencia+' '+h.proveedor); return pals.every(p => t.includes(p)); });
+  if (!res.length) { caja.innerHTML = '<div class="sug-cab">Nada parecido pedido antes: es un artículo nuevo.</div>'; caja.style.display = 'block'; return; }
+  const E = D.estados, abiertas = [E.PENDIENTE, E.ALTERNATIVA, E.VALIDADA, E.FALTA_INFO, E.COMPRADA];
+  window._sugRes = res.slice(0, 8);
+  caja.innerHTML = '<div class="sug-cab">Ya pedido antes ('+res.length+(res.length>8?', se muestran 8 — escribe otra palabra para afinar':'')+'). Toca uno para rellenar los datos:</div>'+
+    window._sugRes.map((h, i) => {
+      const abierta = abiertas.includes(h.estado);
+      return '<button type="button" class="sug-it" onclick="usarSug('+i+')">'+
+        '<b>'+esc(h.articulo)+'</b>'+
+        '<small>'+[h.referencia && 'Ref. '+esc(h.referencia), h.proveedor && esc(h.proveedor), h.unidad && esc(h.unidad),
+                   h.precio !== '' && h.precio != null && esc(h.precio)+' €'].filter(Boolean).join(' · ')+'</small>'+
+        '<small>Pedido '+h.veces+(h.veces===1?' vez':' veces')+' · última '+esc(fmtF(h.ultima))+(h.seccion?' · '+esc(h.seccion):'')+'</small>'+
+        (abierta ? '<span class="sug-ab">Ya hay una abierta: '+esc(h.id)+' · '+esc(nombreEstado(h.estado))+'</span>' : '')+
+      '</button>';
+    }).join('');
+  caja.style.display = 'block';
+}
+function ocultarSug(){ const c = document.getElementById('n_sug'); if (c) { c.style.display = 'none'; c.innerHTML = ''; } }
+function usarSug(i){
+  const h = (window._sugRes || [])[i]; if (!h) return;
+  const g = k => document.getElementById('n_'+k);
+  g('articulo').value = h.articulo;
+  if (h.referencia) g('referencia').value = h.referencia;
+  if (h.proveedor) g('proveedor').value = h.proveedor;
+  if (h.unidad && D.unidades.includes(h.unidad)) g('unidad').value = h.unidad;
+  ocultarSug();
+  g('cantidad').focus();
+  toast('Datos copiados de '+h.id+'. Pon la cantidad y la fecha.');
+}
+async function crear(){
+  const g = k => document.getElementById('n_'+k);
+  const datos = {
+    seccion:g('seccion').value, fechaNecesaria:g('fechaNecesaria').value, articulo:g('articulo').value,
+    cantidad:g('cantidad').value, unidad:g('unidad').value, referencia:g('referencia').value,
+    proveedor:g('proveedor').value, urgente:g('urgente').checked?'Sí':'No', motivo:g('motivo').value
+  };
+  if (await ejecutar('crear', null, datos, 'Solicitud enviada')) { VISTA='todas'; FILTRO.estado='abiertas'; pintar(); }
+}
+
+// ?kiosko=1 → modo PC compartido
+try {
+  google.script.url.getLocation(loc => {
+    KIOSKO = !!(loc && loc.parameter && loc.parameter.kiosko === '1');
+    if (KIOSKO) { document.getElementById('lnkInicio').style.display = 'inline-block'; document.body.classList.add('kiosko'); }
+    vigilarInactividad();
+    cargar();
+  });
+} catch (e) { cargar(); }
+</script>
+</body>
+</html>
